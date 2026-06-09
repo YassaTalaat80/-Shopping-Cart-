@@ -35,7 +35,7 @@ public class Image {
   @Column(name = "image", nullable = false)
   private byte[] image;
 
-  @Column(name = "download_url", nullable = false)
+  @Column(name = "download_url")
   private String downloadUrl;
 
   @ManyToOne(fetch = FetchType.LAZY, optional = false)
