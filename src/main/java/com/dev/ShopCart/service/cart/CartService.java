@@ -18,13 +18,6 @@ public class CartService implements ICartService {
     private final CartMapper cartMapper;
 
     @Override
-    public CartDto getCart(Long id) {
-        Cart cart = cartRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Cart not found!"));
-        return cartMapper.toDto(cart);
-    }
-
-    @Override
     public CartDto getCartByUserId(Long userId) {
         Cart cart = cartRepository.findByUserId(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Cart not found for user!"));
