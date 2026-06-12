@@ -1,10 +1,15 @@
 package com.dev.ShopCart.controller;
 
 import com.dev.ShopCart.dto.CartItemDto;
+import com.dev.ShopCart.security.user.ShopUserDetails;
 import com.dev.ShopCart.service.cart.ICartItemService;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -14,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+@Validated
 @RestController
 @RequestMapping("/api/cart-items")
 @RequiredArgsConstructor
@@ -22,30 +28,34 @@ public class CartItemController {
 
     @PostMapping
     public ResponseEntity<Void> addItemToCart(
-            @RequestParam Long cartId,
-            @RequestParam Long productId,
-            @RequestParam int quantity) {
-        cartItemService.addItemToCart(cartId, productId, quantity);
+            @AuthenticationPrincipal ShopUserDetails userDetails,
+            @Positive(message = "Product ID must be a positive number") @RequestParam Long productId,
+            @Min(value = 1, message = "Quantity must be at least 1") @RequestParam int quantity) {
+        cartItemService.addItemToCart(userDetails.getId(), productId, quantity);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
-    @DeleteMapping("/{cartId}/{productId}")
+    @DeleteMapping("/{productId}")
     public ResponseEntity<Void> removeItemFromCart(
-            @PathVariable Long cartId, @PathVariable Long productId) {
-        cartItemService.removeItemFromCart(cartId, productId);
+            @AuthenticationPrincipal ShopUserDetails userDetails,
+            @Positive(message = "Product ID must be a positive number") @PathVariable Long productId) {
+        cartItemService.removeItemFromCart(userDetails.getId(), productId);
         return ResponseEntity.noContent().build();
     }
 
-    @PutMapping("/{cartId}/{productId}")
+    @PutMapping("/{productId}")
     public ResponseEntity<Void> updateItemQuantity(
-            @PathVariable Long cartId, @PathVariable Long productId, @RequestParam int quantity) {
-        cartItemService.updateItemQuantity(cartId, productId, quantity);
+            @AuthenticationPrincipal ShopUserDetails userDetails,
+            @Positive(message = "Product ID must be a positive number") @PathVariable Long productId,
+            @Min(value = 1, message = "Quantity must be at least 1") @RequestParam int quantity) {
+        cartItemService.updateItemQuantity(userDetails.getId(), productId, quantity);
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping("/{cartId}/{productId}")
+    @GetMapping("/{productId}")
     public ResponseEntity<CartItemDto> getCartItem(
-            @PathVariable Long cartId, @PathVariable Long productId) {
-        return ResponseEntity.ok(cartItemService.getCartItem(cartId, productId));
+            @AuthenticationPrincipal ShopUserDetails userDetails,
+            @Positive(message = "Product ID must be a positive number") @PathVariable Long productId) {
+        return ResponseEntity.ok(cartItemService.getCartItem(userDetails.getId(), productId));
     }
 }
