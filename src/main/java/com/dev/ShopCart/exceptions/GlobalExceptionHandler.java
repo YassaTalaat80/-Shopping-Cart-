@@ -1,6 +1,7 @@
 package com.dev.ShopCart.exceptions;
 
 import com.dev.ShopCart.dto.ErrorResponseDto;
+import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
@@ -92,4 +93,14 @@ public class GlobalExceptionHandler {
                 "A NullPointerException occurred due to : "+exception.getMessage(), LocalDateTime.now());
         return new ResponseEntity<>(errorResponseDto, HttpStatus.CONFLICT);
     }
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<ErrorResponseDto> handleConstraintViolationException(ConstraintViolationException exception, WebRequest webRequest) {
+        String message = exception.getConstraintViolations().stream()
+                .map(v -> v.getPropertyPath() + ": " + v.getMessage())
+                .collect(Collectors.joining(", "));
+        ErrorResponseDto errorResponseDto = new ErrorResponseDto(
+                webRequest.getDescription(false), HttpStatus.BAD_REQUEST, message, LocalDateTime.now());
+        return new ResponseEntity<>(errorResponseDto, HttpStatus.BAD_REQUEST);
+    }
+
 }
